@@ -378,6 +378,75 @@
   color: #b91c1c;
 }
 
+/* ── Table Actions ──────────────────────────────────────────────────────────── */
+
+.actions-cell {
+  white-space: nowrap;
+  padding: 10px 16px !important;
+}
+
+.action-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.btn--action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: var(--sans);
+  transition: box-shadow 0.15s, background 0.15s, opacity 0.15s;
+  white-space: nowrap;
+}
+
+.btn--action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn--action-edit {
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+
+.btn--action-edit:hover:not(:disabled) {
+  box-shadow: 0 2px 8px rgba(170, 59, 255, 0.25);
+}
+
+.btn--action-cancel {
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.btn--action-cancel:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+/* Dimmed row for canceled bookings */
+.row--canceled td {
+  opacity: 0.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn--action-cancel {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+  .btn--action-cancel:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.22);
+  }
+}
+
 /* ── Dark mode ──────────────────────────────────────────────────────────────── */
 
 @media (prefers-color-scheme: dark) {

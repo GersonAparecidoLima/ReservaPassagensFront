@@ -1,0 +1,156 @@
+/* ── Overlay ─────────────────────────────────────────────────────────────────── */
+
+.cd-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* ── Dialog ──────────────────────────────────────────────────────────────────── */
+
+.cd-dialog {
+  background: var(--bg);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 420px;
+  padding: 32px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.28);
+  animation: cd-enter 0.16s ease;
+}
+
+@keyframes cd-enter {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Icon ────────────────────────────────────────────────────────────────────── */
+
+.cd-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .cd-icon {
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+  }
+}
+
+/* ── Content ─────────────────────────────────────────────────────────────────── */
+
+.cd-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.cd-description {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.cd-detail {
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 7px;
+  background: var(--code-bg);
+  font-size: 13px;
+  font-family: var(--mono);
+  color: var(--text-h);
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+}
+
+/* ── Actions ─────────────────────────────────────────────────────────────────── */
+
+.cd-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.cd-actions .btn {
+  flex: 1;
+  justify-content: center;
+  padding: 10px 16px;
+}
+
+/* ── Danger Button ───────────────────────────────────────────────────────────── */
+
+.btn--danger {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+}
+
+.btn--danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn--danger {
+    background: #ef4444;
+    border-color: #ef4444;
+  }
+  .btn--danger:hover:not(:disabled) {
+    background: #dc2626;
+    border-color: #dc2626;
+  }
+}
+
+/* ── Inline Spinner (inside danger button) ───────────────────────────────────── */
+
+.cd-loading-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@keyframes cd-spin {
+  to { transform: rotate(360deg) }
+}
+
+.cd-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: cd-spin 0.65s linear infinite;
+  flex-shrink: 0;
+}

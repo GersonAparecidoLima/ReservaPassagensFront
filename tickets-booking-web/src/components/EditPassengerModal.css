@@ -1,0 +1,159 @@
+/* ── Overlay ─────────────────────────────────────────────────────────────────── */
+
+.ep-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* ── Dialog ──────────────────────────────────────────────────────────────────── */
+
+.ep-modal {
+  background: var(--bg);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+  animation: ep-enter 0.18s ease;
+}
+
+@keyframes ep-enter {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────────── */
+
+.ep-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ep-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.ep-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.ep-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  border-radius: 7px;
+  cursor: pointer;
+  color: var(--text);
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ep-close:hover:not(:disabled) {
+  background: var(--border);
+  color: var(--text-h);
+}
+
+.ep-close:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Body ────────────────────────────────────────────────────────────────────── */
+
+.ep-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ── Form Fields ─────────────────────────────────────────────────────────────── */
+
+.ep-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ep-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.ep-input {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  font-size: 14px;
+  font-family: var(--sans);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ep-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.ep-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: var(--code-bg);
+}
+
+/* ── Feedback Message ────────────────────────────────────────────────────────── */
+
+.ep-message {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ep-message--error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #b91c1c;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ep-message--error { color: #f87171; }
+}
+
+/* ── Action Row ──────────────────────────────────────────────────────────────── */
+
+.ep-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
