@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getAllBookings, getAvailableTrips } from '../api'
+import { SeatMapModal } from '../components/SeatMapModal'
 import { BookingStatus } from '../types'
 import type { AvailableTrip, Booking } from '../types'
 import './Dashboard.css'
@@ -55,9 +56,15 @@ function EmptyBox({ message }: { message: string }) {
 
 const MAX_SEAT_CHIPS = 5
 
-function TripCard({ trip }: { trip: AvailableTrip }) {
+interface TripCardProps {
+  trip: AvailableTrip
+  onSelect: () => void
+}
+
+function TripCard({ trip, onSelect }: TripCardProps) {
   const visible = trip.availableSeats.slice(0, MAX_SEAT_CHIPS)
   const extra = trip.availableSeats.length - MAX_SEAT_CHIPS
+  const hasSeats = trip.availableSeats.length > 0
 
   return (
     <article className="trip-card">
@@ -80,11 +87,11 @@ function TripCard({ trip }: { trip: AvailableTrip }) {
 
       <div className="trip-card__seats">
         <span className="trip-card__seats-label">
-          {trip.availableSeats.length === 0
-            ? 'Sem poltronas disponíveis'
-            : `${trip.availableSeats.length} poltrona${trip.availableSeats.length > 1 ? 's' : ''} disponível${trip.availableSeats.length > 1 ? 'eis' : ''}`}
+          {hasSeats
+            ? `${trip.availableSeats.length} poltrona${trip.availableSeats.length > 1 ? 's' : ''} disponível${trip.availableSeats.length > 1 ? 'eis' : ''}`
+            : 'Sem poltronas disponíveis'}
         </span>
-        {trip.availableSeats.length > 0 && (
+        {hasSeats && (
           <div className="trip-card__chips">
             {visible.map((s) => (
               <span key={s} className="chip">{s}</span>
@@ -93,6 +100,15 @@ function TripCard({ trip }: { trip: AvailableTrip }) {
           </div>
         )}
       </div>
+
+      <button
+        className="btn btn--primary trip-card__cta"
+        onClick={onSelect}
+        disabled={!hasSeats}
+        aria-label={`Selecionar poltrona para ${trip.origin} → ${trip.destination}`}
+      >
+        {hasSeats ? 'Selecionar Poltrona' : 'Esgotado'}
+      </button>
     </article>
   )
 }
@@ -150,6 +166,7 @@ export function Dashboard() {
   const [bookingsState, setBookingsState] = useState<AsyncState>('loading')
   const [tripsError, setTripsError] = useState('')
   const [bookingsError, setBookingsError] = useState('')
+  const [selectedTrip, setSelectedTrip] = useState<AvailableTrip | null>(null)
 
   const fetchTrips = useCallback(() => {
     setTripsState('loading')
@@ -173,6 +190,11 @@ export function Dashboard() {
 
   useEffect(() => { fetchTrips() }, [fetchTrips])
   useEffect(() => { fetchBookings() }, [fetchBookings])
+
+  function handleBookingCreated() {
+    fetchTrips()
+    fetchBookings()
+  }
 
   const isRefreshing = tripsState === 'loading' || bookingsState === 'loading'
 
@@ -230,7 +252,13 @@ export function Dashboard() {
               ? <EmptyBox message="Nenhuma viagem disponível no momento." />
               : (
                 <div className="trips-grid">
-                  {trips.map((t) => <TripCard key={t.id} trip={t} />)}
+                  {trips.map((t) => (
+                    <TripCard
+                      key={t.id}
+                      trip={t}
+                      onSelect={() => setSelectedTrip(t)}
+                    />
+                  ))}
                 </div>
               )
           )}
@@ -257,6 +285,16 @@ export function Dashboard() {
         </section>
 
       </main>
+
+      {/* ── Seat Map Modal ── */}
+      {selectedTrip && (
+        <SeatMapModal
+          trip={selectedTrip}
+          bookings={bookings}
+          onClose={() => setSelectedTrip(null)}
+          onBookingCreated={handleBookingCreated}
+        />
+      )}
     </div>
   )
 }

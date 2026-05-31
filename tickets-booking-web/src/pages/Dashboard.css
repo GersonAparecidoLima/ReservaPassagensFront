@@ -121,6 +121,21 @@
   box-shadow: var(--shadow);
 }
 
+.btn--primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.btn--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 14px rgba(170, 59, 255, 0.4);
+}
+
+.btn--primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* ── Trip Cards ─────────────────────────────────────────────────────────────── */
 
 .trips-grid {
@@ -203,6 +218,14 @@
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
+}
+
+.trip-card__cta {
+  width: 100%;
+  justify-content: center;
+  margin-top: auto;
+  padding: 9px 16px;
+  font-size: 13px;
 }
 
 /* ── Chips ──────────────────────────────────────────────────────────────────── */
