@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import { deleteBooking, getAllBookings, getAvailableTrips } from '../api'
+import { deleteBooking, getAllBookings } from '../api'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { EditPassengerModal } from '../components/EditPassengerModal'
-import { SeatMapModal } from '../components/SeatMapModal'
 import { BookingStatus } from '../types'
-import type { AvailableTrip, Booking } from '../types'
+import type { Booking } from '../types'
 import './Dashboard.css'
 
 // ─── Formatting ───────────────────────────────────────────────────────────────
@@ -13,9 +12,6 @@ const formatDate = (iso: string) =>
   new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(
     new Date(iso)
   )
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 
 // ─── Status Config ────────────────────────────────────────────────────────────
 
@@ -48,65 +44,6 @@ function EmptyBox({ message }: { message: string }) {
   return <div className="state-box state-box--empty"><p>{message}</p></div>
 }
 
-// ─── Trip Card ────────────────────────────────────────────────────────────────
-
-const MAX_SEAT_CHIPS = 5
-
-interface TripCardProps {
-  trip: AvailableTrip
-  onSelect: () => void
-}
-
-function TripCard({ trip, onSelect }: TripCardProps) {
-  const visible = trip.availableSeats.slice(0, MAX_SEAT_CHIPS)
-  const extra = trip.availableSeats.length - MAX_SEAT_CHIPS
-  const hasSeats = trip.availableSeats.length > 0
-
-  return (
-    <article className="trip-card">
-      <div className="trip-card__route">
-        <span className="trip-card__place">{trip.origin}</span>
-        <span className="trip-card__arrow" aria-hidden="true">→</span>
-        <span className="trip-card__place">{trip.destination}</span>
-      </div>
-
-      <dl className="trip-card__info">
-        <div>
-          <dt>Partida</dt>
-          <dd>{formatDate(trip.departureTime)}</dd>
-        </div>
-        <div>
-          <dt>Preço</dt>
-          <dd className="trip-card__price">{formatCurrency(trip.price)}</dd>
-        </div>
-      </dl>
-
-      <div className="trip-card__seats">
-        <span className="trip-card__seats-label">
-          {hasSeats
-            ? `${trip.availableSeats.length} poltrona${trip.availableSeats.length > 1 ? 's' : ''} disponível${trip.availableSeats.length > 1 ? 'eis' : ''}`
-            : 'Sem poltronas disponíveis'}
-        </span>
-        {hasSeats && (
-          <div className="trip-card__chips">
-            {visible.map((s) => <span key={s} className="chip">{s}</span>)}
-            {extra > 0 && <span className="chip chip--more">+{extra}</span>}
-          </div>
-        )}
-      </div>
-
-      <button
-        className="btn btn--primary trip-card__cta"
-        onClick={onSelect}
-        disabled={!hasSeats}
-        aria-label={`Selecionar poltrona para ${trip.origin} → ${trip.destination}`}
-      >
-        {hasSeats ? 'Selecionar Poltrona' : 'Esgotado'}
-      </button>
-    </article>
-  )
-}
-
 // ─── Bookings Table ───────────────────────────────────────────────────────────
 
 interface BookingsTableProps {
@@ -137,7 +74,7 @@ function BookingsTable({ bookings, onEdit, onCancelRequest, processingId }: Book
             const route = b.trip
               ? `${b.trip.departurePlace} → ${b.trip.arrivalPlace}`
               : '—'
-            const isCanceled  = b.status === BookingStatus.Canceled
+            const isCanceled   = b.status === BookingStatus.Canceled
             const isProcessing = processingId === b.id
 
             return (
@@ -191,28 +128,12 @@ function BookingsTable({ bookings, onEdit, onCancelRequest, processingId }: Book
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
 export function Dashboard() {
-  const [trips, setTrips] = useState<AvailableTrip[]>([])
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [tripsState, setTripsState] = useState<AsyncState>('loading')
+  const [bookings, setBookings]           = useState<Booking[]>([])
   const [bookingsState, setBookingsState] = useState<AsyncState>('loading')
-  const [tripsError, setTripsError] = useState('')
   const [bookingsError, setBookingsError] = useState('')
-
-  // Modal state
-  const [selectedTrip, setSelectedTrip]     = useState<AvailableTrip | null>(null)
-  const [editingBooking, setEditingBooking]  = useState<Booking | null>(null)
-  const [cancelTarget, setCancelTarget]      = useState<Booking | null>(null)
-  const [deletingId, setDeletingId]          = useState<string | null>(null)
-
-  const fetchTrips = useCallback(() => {
-    setTripsState('loading')
-    getAvailableTrips()
-      .then((data) => { setTrips(data); setTripsState('success') })
-      .catch((err: Error) => {
-        setTripsError(err.message || 'Erro ao carregar viagens.')
-        setTripsState('error')
-      })
-  }, [])
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null)
+  const [cancelTarget, setCancelTarget]     = useState<Booking | null>(null)
+  const [deletingId, setDeletingId]         = useState<string | null>(null)
 
   const fetchBookings = useCallback(() => {
     setBookingsState('loading')
@@ -224,94 +145,52 @@ export function Dashboard() {
       })
   }, [])
 
-  useEffect(() => { fetchTrips() }, [fetchTrips])
   useEffect(() => { fetchBookings() }, [fetchBookings])
 
-  // Seat map → new booking created
-  function handleBookingCreated() {
-    fetchTrips()
-    fetchBookings()
-  }
-
-  // Edit modal → saved successfully
   function handleEditSaved() {
     fetchBookings()
   }
 
-  // Confirm dialog → confirm cancellation
   async function handleConfirmCancel() {
     if (!cancelTarget) return
-    setDeletingId(cancelTarget.id)
+    const targetId = cancelTarget.id
+    setDeletingId(targetId)
     try {
-      await deleteBooking(cancelTarget.id)
+      await deleteBooking(targetId)
+      // Remove imediatamente do estado local (HTTP 204 recebido) antes do re-fetch
+      setBookings(prev => prev.filter(b => b.id !== targetId))
       setCancelTarget(null)
-      fetchTrips()    // libera assento → atualiza contagem
       fetchBookings()
     } catch {
-      // manter diálogo aberto em caso de erro não é crítico aqui,
-      // mas fechar é aceitável — o refetch vai mostrar o estado real
       setCancelTarget(null)
     } finally {
       setDeletingId(null)
     }
   }
 
-  const isRefreshing = tripsState === 'loading' || bookingsState === 'loading'
-
   return (
     <div className="dashboard">
-      <header className="dash-header">
-        <div className="dash-header__brand">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
-            <path d="M13 5v2" /><path d="M13 17v2" /><path d="M13 11v2" />
-          </svg>
-          <span>Tickets Booking</span>
-        </div>
-
-        <button
-          className="btn btn--ghost"
-          onClick={() => { fetchTrips(); fetchBookings() }}
-          disabled={isRefreshing}
-          aria-label="Atualizar dados"
-        >
-          {isRefreshing ? 'Atualizando…' : 'Atualizar'}
-        </button>
-      </header>
-
       <main className="dash-main">
-
-        {/* ── Viagens Disponíveis ── */}
-        <section className="dash-section">
-          <div className="dash-section__head">
-            <h2>Viagens Disponíveis</h2>
-            {tripsState === 'success' && <span className="count-badge">{trips.length}</span>}
-          </div>
-
-          {tripsState === 'loading' && <Spinner />}
-          {tripsState === 'error'   && <ErrorBox message={tripsError} onRetry={fetchTrips} />}
-          {tripsState === 'success' && (
-            trips.length === 0
-              ? <EmptyBox message="Nenhuma viagem disponível no momento." />
-              : (
-                <div className="trips-grid">
-                  {trips.map((t) => (
-                    <TripCard key={t.id} trip={t} onSelect={() => setSelectedTrip(t)} />
-                  ))}
-                </div>
-              )
-          )}
-        </section>
-
-        {/* ── Reservas ── */}
-        <section className="dash-section">
+        <section>
           <div className="dash-section__head">
             <h2>Reservas</h2>
-            {bookingsState === 'success' && <span className="count-badge">{bookings.length}</span>}
+            {bookingsState === 'success' && (
+              <span className="count-badge">{bookings.length}</span>
+            )}
+            <button
+              className="btn btn--ghost dash-refresh"
+              onClick={fetchBookings}
+              disabled={bookingsState === 'loading'}
+              aria-label="Atualizar reservas"
+            >
+              {bookingsState === 'loading' ? 'Atualizando…' : 'Atualizar'}
+            </button>
           </div>
 
           {bookingsState === 'loading' && <Spinner />}
-          {bookingsState === 'error'   && <ErrorBox message={bookingsError} onRetry={fetchBookings} />}
+          {bookingsState === 'error'   && (
+            <ErrorBox message={bookingsError} onRetry={fetchBookings} />
+          )}
           {bookingsState === 'success' && (
             bookings.length === 0
               ? <EmptyBox message="Nenhuma reserva encontrada." />
@@ -325,20 +204,8 @@ export function Dashboard() {
               )
           )}
         </section>
-
       </main>
 
-      {/* ── Seat Map Modal ── */}
-      {selectedTrip && (
-        <SeatMapModal
-          trip={selectedTrip}
-          bookings={bookings}
-          onClose={() => setSelectedTrip(null)}
-          onBookingCreated={handleBookingCreated}
-        />
-      )}
-
-      {/* ── Edit Passenger Modal ── */}
       {editingBooking && (
         <EditPassengerModal
           booking={editingBooking}
@@ -347,7 +214,6 @@ export function Dashboard() {
         />
       )}
 
-      {/* ── Cancel Confirm Dialog ── */}
       {cancelTarget && (
         <ConfirmDialog
           title="Cancelar Reserva"

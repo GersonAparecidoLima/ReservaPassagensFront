@@ -1,10 +1,12 @@
 // ─── Enums ───────────────────────────────────────────────────────────────────
 
-export enum BookingStatus {
-  PendingPayment = 1,
-  Confirmed = 2,
-  Canceled = 3,
-}
+export const BookingStatus = {
+  PendingPayment: 1,
+  Confirmed: 2,
+  Canceled: 3,
+} as const
+
+export type BookingStatus = typeof BookingStatus[keyof typeof BookingStatus]
 
 // ─── Domain Entities ─────────────────────────────────────────────────────────
 
